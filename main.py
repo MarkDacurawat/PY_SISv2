@@ -1,8 +1,13 @@
 from tkinter import *
+from tkinter import messagebox
 import customtkinter
 from PIL import Image, ImageTk
 import os
 import re
+
+from backend.db import SisDatabase
+
+sisDatabase = SisDatabase('backend/sis.sqlite')
 
 current_directory = os.getcwd()
 fepc_logo_path = os.path.join(current_directory, 'images', 'fepc-logo.png')
@@ -10,11 +15,11 @@ fepc_logo_path = os.path.join(current_directory, 'images', 'fepc-logo.png')
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Account Picker")
+        self.title("Far Eastern Polytechnic College | Student Information System")
         self.geometry("1360x690+0+0")
         self.resizable(width=FALSE, height=FALSE)
         self.current_page_index = 0
-        self.pages = [self.user_type_page, self.login_form_page , self.student_form_page]
+        self.pages = [self.user_type_page, self.login_form_page , self.student_form_page, self.dashboard_page]
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("green")
         
@@ -38,17 +43,29 @@ class App(customtkinter.CTk):
         self.page_container = customtkinter.CTkFrame(self.main_frame, fg_color='transparent')
         self.page_container.pack(fill=BOTH, expand=YES)
     
-    def changePage(self, page_index):
+    def changePage(self, page_name):
         self.clearFrames(self.page_container)
-        self.current_page_index = page_index
-        self.pages[page_index]()
+        
+        match page_name:
+            case "user_type_page":
+                self.pages[0]()
+                self.current_page_index = 0
+            case "login_form_page":
+                self.pages[1]()
+                self.current_page_index = 1
+            case "student_form_page":
+                self.pages[2]()
+                self.current_page_index = 2
+            case "dashboard_page":
+                self.pages[3]()
+                self.current_page_index = 3
         
     def user_type_page(self):
         def openLoginWindow():
-            self.changePage(1)
+            self.changePage("login_form_page")
 
         def openStudentForm():
-            self.changePage(2)
+            self.changePage("student_form_page")
 
         self.clearFrames(self.page_container)
         self.user_type_container = customtkinter.CTkFrame(self.page_container, fg_color='transparent')
@@ -69,8 +86,18 @@ class App(customtkinter.CTk):
     
     def login_form_page(self):
         
-        def nextPage():
-            self.changePage(1)
+        def authenticate():
+            username = self.usernameEntry.get()
+            password = self.passwordEntry.get()
+            result = sisDatabase.authenticateAdmin(username, password)
+            if result:
+                user = result[1]
+                messagebox.showinfo("Login Successfully!", f"Welcome! Admin {user}")
+                self.changePage("dashboard_page")
+            else:
+                messagebox.showerror("Login Error", "Invalid username or password")
+
+        self.clearFrames(self.page_container)
         
         self.login_container = customtkinter.CTkFrame(self.page_container, width=700, height=400)
         self.login_container.pack(pady=120, anchor=CENTER)
@@ -92,8 +119,50 @@ class App(customtkinter.CTk):
         self.passwordEntry = customtkinter.CTkEntry(self.inputsFrame, placeholder_text="Enter Your Password", show="*", width=280, height=35)
         self.passwordEntry.place(x=20, y=165)
 
-        self.loginButton = customtkinter.CTkButton(self.inputsFrame, width=280, height=40, text="LOGIN", command=nextPage)
+        self.loginButton = customtkinter.CTkButton(self.inputsFrame, width=280, height=40, text="LOGIN", command=authenticate)
         self.loginButton.place(x=20, y=220)
+        
+    def dashboard_page(self):
+        self.clearFrames(self.page_container)
+        self.dashboard_container = customtkinter.CTkFrame(self.page_container, fg_color='transparent')
+        self.dashboard_container.pack(fill=BOTH, expand=YES)
+
+        # Dashboard Title
+        customtkinter.CTkLabel(self.dashboard_container, text="Dashboard", font=("Arial", 30, "bold")).pack(pady=20)
+
+        # Quick Stats Frame
+        quick_stats_frame = customtkinter.CTkFrame(self.dashboard_container, fg_color='white')
+        quick_stats_frame.pack(fill=BOTH, expand=YES, padx=20, pady=10)
+
+        # Add Quick Stats Widgets
+        customtkinter.CTkLabel(quick_stats_frame, text="Quick Stats", font=("Arial", 20, "bold")).pack(pady=10)
+
+        # You can add more widgets here for quick stats display, like total students, pending tasks, etc.
+        # Example:
+        customtkinter.CTkLabel(quick_stats_frame, text="Total Students: 1000").pack()
+        customtkinter.CTkLabel(quick_stats_frame, text="Pending Tasks: 5").pack()
+
+        # Recent Activities Frame
+        recent_activities_frame = customtkinter.CTkFrame(self.dashboard_container, fg_color='white')
+        recent_activities_frame.pack(fill=BOTH, expand=YES, padx=20, pady=10)
+
+        # Add Recent Activities Widgets
+        customtkinter.CTkLabel(recent_activities_frame, text="Recent Activities", font=("Arial", 20, "bold")).pack(pady=10)
+
+        # You can add more widgets here for recent activities display, like recent logins, submissions, etc.
+        # Example:
+        customtkinter.CTkLabel(recent_activities_frame, text="1. Logged in as admin (2 minutes ago)").pack(anchor="w", padx=10)
+        customtkinter.CTkLabel(recent_activities_frame, text="2. Submitted new student information (5 minutes ago)").pack(anchor="w", padx=10)
+
+        # Logout Button
+        customtkinter.CTkButton(self.dashboard_container, text="Logout", width=10, command=self.logout).pack(pady=20)
+
+    def logout(self):
+        # Add your logout logic here, for example, switch back to the login page
+        self.changePage("login_form_page")
+
+
+        
         
         
     
@@ -140,13 +209,19 @@ class App(customtkinter.CTk):
         self.create_form_entry(self.formsFrame, "FIRST NAME:", "e.g Mark", self.row["second"], self.column["first"], self.first_name_pattern)
         self.create_form_entry(self.formsFrame, "MIDDLE NAME:", "e.g Resma", self.row["third"], self.column["first"], self.middle_name_pattern)
         self.create_form_entry(self.formsFrame, "LAST NAME:", "e.g Dacurawat", self.row["fourth"], self.column["first"], self.last_name_pattern)
-        self.create_form_option_menu(self.formsFrame, "GENDER:", ['Male', 'Female'], self.row["first"], self.column["second"])
-        self.create_form_entry(self.formsFrame, "ADDRESS:", "e.g Blk 50 Lot 2 ...", self.row["second"], self.column["second"], self.address_pattern)
-        self.create_form_entry(self.formsFrame, "MOBILE NUM:", "e.g 09212121212", self.row["third"], self.column["second"], self.phone_number_pattern)
-        self.create_form_option_menu(self.formsFrame, "YEAR LEVEL:", ['1st Year', '2nd Year', '3rd Year', '4th Year'], self.row["fourth"], self.column["second"])
-        self.create_form_option_menu(self.formsFrame, "COURSE:", ['B.S Computer Science', 'B.S Tourism Mngt.', 'B.S Hospitality Mngt.', 'B.S Bus. Administration', 'BTVTed Education'], self.row["first"], self.column["third"])
+        self.create_form_entry(self.formsFrame, "AGE:", "e.g 19", self.row["first"], self.column["second"])
+        self.create_form_entry(self.formsFrame, "BIRTHDAY:", "e.g 1998-01-01", self.row["second"], self.column["second"])
+        self.create_form_entry(self.formsFrame, "ADDRESS:", "e.g Blk 50 Lot 2 ...", self.row["third"], self.column["second"], self.address_pattern)
+        self.create_form_entry(self.formsFrame, "MOBILE NUM:", "e.g 09212121212", self.row["fourth"], self.column["second"], self.phone_number_pattern)
+        self.create_form_option_menu(self.formsFrame, "GENDER:", ['Male', 'Female'], self.row["first"], self.column["third"])
+        self.create_form_option_menu(self.formsFrame, "YEAR LEVEL:", ['1st Year', '2nd Year', '3rd Year', '4th Year'], self.row["second"], self.column["third"])
+        self.create_form_option_menu(self.formsFrame, "COURSE:", ['B.S Computer Science', 'B.S Tourism Mngt.', 'B.S Hospitality Mngt.', 'B.S Bus. Administration', 'BTVTed Education'], self.row["third"], self.column["third"])
+        self.create_form_option_menu(self.formsFrame, "SEMESTER:", ["1st Semester", "2nd Semester"], self.row["fourth"], self.column["third"])
+        
+        self.submit_button = customtkinter.CTkButton(self.formsFrame, text="SAVE", width=1200, height=35)
+        self.submit_button.place(x=55, y=320)
 
-    def create_form_entry(self, frame, label_text, placeholder_text, y_position, x_position, pattern):
+    def create_form_entry(self, frame, label_text, placeholder_text, y_position, x_position, pattern=""):
         entryFrame = customtkinter.CTkFrame(frame, width=380, height=35, fg_color='transparent')
         entryFrame.place(x=x_position, y=y_position)
         label = customtkinter.CTkLabel(entryFrame, text=label_text, font=('Arial', 13, 'bold'))
@@ -165,6 +240,16 @@ class App(customtkinter.CTk):
         
 
 if __name__ == "__main__":
+    # Connect From Database
+    sisDatabase.connect()
+    
+    # Create Tables
+    sisDatabase.create_tables()
+    # sisDatabase.insert_admin("admin", "12345")
+    
+    # Drop Tables
+    # sisDatabase.drop_tables()
+    
     app = App()
     app.mainloop()
         

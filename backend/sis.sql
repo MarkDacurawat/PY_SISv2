@@ -1,0 +1,1 @@
+INSERT INTO `admin` (`username`, `password`) VALUES ( 'admin', md5('12345'));

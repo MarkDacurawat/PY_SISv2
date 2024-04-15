@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import hashlib
 
 class SisDatabase:
     def __init__(self, db_file_path):
@@ -52,6 +53,36 @@ class SisDatabase:
             print("Tables created successfully")
         except Exception as e:
             print("Internal Server Error ", e)
+            
+    def authenticateAdmin(self, username, password):
+        try:
+            # Compute the MD5 hash of the password
+            password_hash = hashlib.md5(password.encode()).hexdigest()
+            
+            self.cursor.execute("SELECT * FROM admin WHERE username = ? AND password = ?", (username, password_hash))
+            result = self.cursor.fetchone()
+            
+            if result:
+                return result
+            else:
+                return False
+        except Exception as e:
+            print("Internal Server Error ", e)
+    
+    def insert_admin(self, username, password):
+        try:
+            # Compute the MD5 hash of the password
+            password_hash = hashlib.md5(password.encode()).hexdigest()
+            
+            # Insert the admin into the database
+            self.cursor.execute("INSERT INTO admin (username, password) VALUES (?, ?)", (username, password_hash))
+            
+            self.conn.commit()
+            print("Admin inserted successfully!")
+            
+        except sqlite3.Error as e:
+            print("Error inserting admin:", e)
+
     
     def drop_tables(self):
         try:
