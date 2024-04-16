@@ -32,11 +32,14 @@ class SisDatabase:
                     first_name VARCHAR(50),
                     middle_name VARCHAR(50),
                     last_name VARCHAR(50),
-                    gender TEXT CHECK (gender IN ('Male', 'Female', 'Other')),
-                    year_level INTEGER,
+                    age INTEGER,
+                    birthday VARCHAR(10),
                     address VARCHAR(255),
                     phone_number VARCHAR(15),
+                    gender TEXT CHECK (gender IN ('Male', 'Female', 'Other')),
+                    year_level INTEGER,
                     course_id INTEGER,
+                    semester VARCHAR(10),
                     FOREIGN KEY(course_id) REFERENCES course(id)
                 )
             """)

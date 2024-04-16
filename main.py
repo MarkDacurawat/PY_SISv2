@@ -161,18 +161,14 @@ class App(customtkinter.CTk):
         # Add your logout logic here, for example, switch back to the login page
         self.changePage("login_form_page")
 
-
-        
-        
-        
-    
     def student_form_page(self):
-        # Functions
         self.lrn_pattern = re.compile(r'^\d{12}$')
         self.first_name_pattern = re.compile(r'^[A-Za-z]{1,30}(?: [A-Za-z]{1,30})?$')
-        self.middle_name_pattern = re.compile(r'^[A-Za-z]+(?: [A-Za-z]{1,30})*$')
+        self.middle_name_pattern = re.compile(r'^[A-Za-z]+(?: [A-Za-z]+)?$')
         self.last_name_pattern = re.compile(r'^[A-Za-z]{1,30}(?: [A-Za-z]{1,30})?$')
         self.address_pattern = re.compile(r'^[A-Za-z0-9\s\.,#-]{1,100}$')
+        self.age_pattern = re.compile(r'^\d+$')
+        self.birthday_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}$')
         self.phone_number_pattern = re.compile(r'^\d{11}$')
         
         # X and Y positioning
@@ -199,44 +195,112 @@ class App(customtkinter.CTk):
         self.pageTitle.pack(pady=20, anchor="center")
 
         self.create_forms()
-
+        
+    def validate_entry(self, value, pattern):
+        if pattern.match(value):
+            return True
+        else:
+            return False
+        
     def create_forms(self):
         # Forms Frame
         self.formsFrame = customtkinter.CTkFrame(self.student_form_container, height=400)
         self.formsFrame.pack(fill=X, padx=30)
 
-        self.create_form_entry(self.formsFrame, "STUDENT LRN:", "e.g 107921324321", self.row["first"], self.column["first"], self.lrn_pattern)
-        self.create_form_entry(self.formsFrame, "FIRST NAME:", "e.g Mark", self.row["second"], self.column["first"], self.first_name_pattern)
-        self.create_form_entry(self.formsFrame, "MIDDLE NAME:", "e.g Resma", self.row["third"], self.column["first"], self.middle_name_pattern)
-        self.create_form_entry(self.formsFrame, "LAST NAME:", "e.g Dacurawat", self.row["fourth"], self.column["first"], self.last_name_pattern)
-        self.create_form_entry(self.formsFrame, "AGE:", "e.g 19", self.row["first"], self.column["second"])
-        self.create_form_entry(self.formsFrame, "BIRTHDAY:", "e.g 1998-01-01", self.row["second"], self.column["second"])
-        self.create_form_entry(self.formsFrame, "ADDRESS:", "e.g Blk 50 Lot 2 ...", self.row["third"], self.column["second"], self.address_pattern)
-        self.create_form_entry(self.formsFrame, "MOBILE NUM:", "e.g 09212121212", self.row["fourth"], self.column["second"], self.phone_number_pattern)
-        self.create_form_option_menu(self.formsFrame, "GENDER:", ['Male', 'Female'], self.row["first"], self.column["third"])
-        self.create_form_option_menu(self.formsFrame, "YEAR LEVEL:", ['1st Year', '2nd Year', '3rd Year', '4th Year'], self.row["second"], self.column["third"])
-        self.create_form_option_menu(self.formsFrame, "COURSE:", ['B.S Computer Science', 'B.S Tourism Mngt.', 'B.S Hospitality Mngt.', 'B.S Bus. Administration', 'BTVTed Education'], self.row["third"], self.column["third"])
-        self.create_form_option_menu(self.formsFrame, "SEMESTER:", ["1st Semester", "2nd Semester"], self.row["fourth"], self.column["third"])
-        
-        self.submit_button = customtkinter.CTkButton(self.formsFrame, text="SAVE", width=1200, height=35)
-        self.submit_button.place(x=55, y=320)
+        self.lrn_entry  =  self.create_form_entry(self.formsFrame, "STUDENT LRN:", "e.g 107921324321", self.row["first"], self.column["first"])
+        self.firstname_entry  =  self.create_form_entry(self.formsFrame, "FIRST NAME:", "e.g Mark", self.row["second"], self.column["first"])
+        self.middlename_entry =  self.create_form_entry(self.formsFrame, "MIDDLE NAME:", "e.g Resma", self.row["third"], self.column["first"])
+        self.lastname_entry  =  self.create_form_entry(self.formsFrame, "LAST NAME:", "e.g Dacurawat", self.row["fourth"], self.column["first"])
+        self.age_entry  =  self.create_form_entry(self.formsFrame, "AGE:", "e.g 19", self.row["first"], self.column["second"])
+        self.birthday_entry  =  self.create_form_entry(self.formsFrame, "BIRTHDAY:", "e.g 1998-01-01",self.row["second"], self.column["second"])
+        self.address_entry  =  self.create_form_entry(self.formsFrame, "ADDRESS:", "e.g Blk 50 Lot 2 ...",self.row["third"], self.column["second"])
+        self.phonenumber_entry  =  self.create_form_entry(self.formsFrame, "PHONE #:", "e.g 09212121212",self.row["fourth"], self.column["second"])
+        self.gender_option  =  self.create_form_option_menu(self.formsFrame, "GENDER:", ['Male', 'Female'],self.row["first"], self.column["third"])
+        self.yearlevel_option  =  self.create_form_option_menu(self.formsFrame, "YEAR LEVEL:", ['1st Year', '2nd Year', '3rd Year', '4th Year'],self.row["second"], self.column["third"])
+        self.course_option  =  self.create_form_option_menu(self.formsFrame, "COURSE:", ['B.S Computer Science', 'B.S Tourism Mngt.', 'B.S Hospitality Mngt.', 'B.S Bus. Administration', 'BTVTed Education'],self.row["third"], self.column["third"])
+        self.semester_option  =  self.create_form_option_menu(self.formsFrame, "SEMESTER:", ["1st Semester", "2nd Semester"],self.row["fourth"], self.column["third"])
 
-    def create_form_entry(self, frame, label_text, placeholder_text, y_position, x_position, pattern=""):
+        def validate(): 
+            lrn = self.lrn_entry.get()
+            firstname = self.firstname_entry.get()
+            middlename = self.middlename_entry.get()
+            lastname = self.lastname_entry.get()
+            age = self.age_entry.get()
+            birthday = self.birthday_entry.get()
+            address = self.address_entry.get()
+            phonenumber = self.phonenumber_entry.get()
+            gender = self.gender_option.get()
+            
+        
+            if not self.validate_entry(lrn, self.lrn_pattern):
+                messagebox.showerror("Error Message", "Invalid LRN.")
+                return False
+            if not self.validate_entry(firstname, self.first_name_pattern):
+                messagebox.showerror("Error Message", "First name must be a string and allowed one space.")
+                return False
+            if not self.validate_entry(middlename, self.middle_name_pattern):
+                messagebox.showerror("Error Message", "Middle name must be a string and allowed one space.")
+                return False
+            if not self.validate_entry(lastname, self.last_name_pattern):
+                messagebox.showerror("Error Message", "Last name must be a string and allowed one space.")
+                return False
+            if not self.validate_entry(age, self.age_pattern):
+                messagebox.showerror("Error Message", "Age must be a number.")
+                return False
+            if not self.validate_entry(birthday, self.birthday_pattern):
+                messagebox.showerror("Error Message", "Birthday must be in the format YYYY-MM-DD.")
+                return False
+            if not self.validate_entry(address, self.address_pattern):
+                messagebox.showerror("Error Message", "Address must be 100 characters or less.")
+                return False
+            if not self.validate_entry(phonenumber, self.phone_number_pattern):
+                messagebox.showerror("Error Message", "Phone number must be 11 digits.")
+                return False
+            return True
+        def save_student_info():
+            if not validate():
+                return
+            
+            lrn = self.lrn_entry.get()
+            firstname = self.firstname_entry.get()
+            middlename = self.middlename_entry.get()
+            lastname = self.lastname_entry.get()
+            age = self.age_entry.get()
+            birthday = self.birthday_entry.get()
+            address = self.address_entry.get()
+            phonenumber = self.phonenumber_entry.get()
+            gender = self.gender_option.get()
+            yearlevel = self.yearlevel_option.get()
+            course = self.course_option.get()
+            semester = self.semester_option.get()
+            
+            print(lrn, firstname, middlename, lastname, age, birthday, address, mobilenumber, gender, yearlevel, course, semester)
+
+
+        self.saveButton = customtkinter.CTkButton(self.formsFrame, width=100, height=40, text="SAVE", command=save_student_info)
+        self.saveButton.place(y=250, x=55)
+        
+        
+    def create_form_entry(self, frame, label_text, placeholder_text, y_position, x_position):
         entryFrame = customtkinter.CTkFrame(frame, width=380, height=35, fg_color='transparent')
         entryFrame.place(x=x_position, y=y_position)
         label = customtkinter.CTkLabel(entryFrame, text=label_text, font=('Arial', 13, 'bold'))
         label.place(x=0, y=3)
         entry = customtkinter.CTkEntry(entryFrame, placeholder_text=placeholder_text, width=250, height=35)
         entry.place(x=110, y=1)
+        return entry
+        
 
     def create_form_option_menu(self, frame, label_text, options, y_position, x_position):
         optionFrame = customtkinter.CTkFrame(frame, width=380, height=35, fg_color='transparent')
         optionFrame.place(x=x_position, y=y_position)
         label = customtkinter.CTkLabel(optionFrame, text=label_text, font=('Arial', 13, 'bold'))
         label.place(x=0, y=3)
-        optionMenu = customtkinter.CTkOptionMenu(optionFrame, width=250, height=35, values=options)
-        optionMenu.place(x=110, y=1)
-        
+        option = customtkinter.CTkOptionMenu(optionFrame, width=250, height=35, values=options)
+        option.place(x=110, y=1)
+        return option
+    
+    
         
 
 if __name__ == "__main__":
