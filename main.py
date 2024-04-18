@@ -18,8 +18,8 @@ class App(customtkinter.CTk):
         self.title("Far Eastern Polytechnic College | Student Information System")
         self.geometry("1360x690+0+0")
         self.resizable(width=FALSE, height=FALSE)
-        self.current_page_index = 0
-        self.pages = [self.user_type_page, self.login_form_page , self.student_form_page, self.dashboard_page]
+        self.current_page_index = 3
+        self.pages = [self.user_type_page, self.login_form_page , self.student_form_page, self.dashboard_page, self.signup_form_page]
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("green")
         
@@ -59,6 +59,9 @@ class App(customtkinter.CTk):
             case "dashboard_page":
                 self.pages[3]()
                 self.current_page_index = 3
+            case "signup_form_page":
+                self.pages[4]()
+                self.current_page_index = 4
         
     def user_type_page(self):
         def openLoginWindow():
@@ -96,11 +99,12 @@ class App(customtkinter.CTk):
                 self.changePage("dashboard_page")
             else:
                 messagebox.showerror("Login Error", "Invalid username or password")
-
-        self.clearFrames(self.page_container)
         
         self.login_container = customtkinter.CTkFrame(self.page_container, width=700, height=400)
         self.login_container.pack(pady=120, anchor=CENTER)
+        
+        self.backButton = customtkinter.CTkButton(self.login_container, text="Back", width=100, height=50, command=lambda: self.changePage("user_type_page"))
+        self.backButton.place(x=0, y=0)
         
         self.fepc_logo = customtkinter.CTkImage(Image.open(fepc_logo_path), size=(300, 300))
         self.loginLogo = customtkinter.CTkLabel(self.login_container, image=self.fepc_logo, text="")
@@ -122,40 +126,117 @@ class App(customtkinter.CTk):
         self.loginButton = customtkinter.CTkButton(self.inputsFrame, width=280, height=40, text="LOGIN", command=authenticate)
         self.loginButton.place(x=20, y=220)
         
+    def signup_form_page(self):
+        
+        # Validate Registration Entry
+        def validate():
+            usernamePattern = re.compile(r'^[a-zA-Z0-9]{3,20}(?:_[a-zA-Z0-9]{3,20})?$')
+            passwordPattern = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$')
+                    
+            username = self.usernameEntry.get()
+            password = self.passwordEntry.get()
+                    
+            if not usernamePattern.match(username):
+                messagebox.showwarning("Warning", "Invalid username. Only alphanumeric characters (A-Z, a-z, 0-9) are allowed, with at most one underscore. Username must be between 3 to 20 characters.")
+                return False
+            if not passwordPattern.match(password):
+                messagebox.showwarning('Warning','''
+        Invalid password. Please ensure your password meets the following criteria:
+                                            
+        - At least one lowercase letter (a-z)
+        - At least one uppercase letter (A-Z)
+        - At least one digit (0-9)
+        - Minimum length of 8 characters
+                                            ''')
+                return False
+            return True
+        
+        def register():
+            username = self.usernameEntry.get()
+            password = self.passwordEntry.get()
+            
+            if not validate():
+                return
+            
+            # Check if username already exists
+            if sisDatabase.check_username_exists(username):
+                messagebox.showerror("Username Already Exists", "Username already exists!")
+                return
+           
+            success = sisDatabase.register_admin(username, password)
+            messagebox.showinfo("Signup Successful!", "You have successfully signed up!")
+            self.changePage("dashboard_page")
+            
+        self.signup_container = customtkinter.CTkFrame(self.page_container, width=700, height=400)
+        self.signup_container.pack(pady=120, anchor=CENTER)
+        
+        self.backButton = customtkinter.CTkButton(self.signup_container, text="Back", width=100, height=50, command=lambda: self.changePage("dashboard_page"))
+        self.backButton.place(x=0, y=0)
+        
+        
+        self.fepc_logo = customtkinter.CTkImage(Image.open(fepc_logo_path), size=(300, 300))
+        self.signupLogo = customtkinter.CTkLabel(self.signup_container, image=self.fepc_logo, text="")
+        self.signupLogo.place(x=40, y=50)
+
+        self.inputsFrame = customtkinter.CTkFrame(self.signup_container, width=400, height=300, fg_color='transparent')
+        self.inputsFrame.place(x=360, y=50)
+
+        customtkinter.CTkLabel(self.inputsFrame, text="Sign Up Form", font=("Arial", 35, "bold")).place(x=20, y=0)
+
+        self.usernameLabel = customtkinter.CTkLabel(self.inputsFrame, text="Username:", font=('Arial', 12, 'bold')).place(x=20, y=70)
+        self.usernameEntry = customtkinter.CTkEntry(self.inputsFrame, placeholder_text="Enter Your Username", width=280, height=35)
+        self.usernameEntry.place(x=20, y=95)
+
+        self.passwordLabel = customtkinter.CTkLabel(self.inputsFrame, text="Password:", font=('Arial', 12, 'bold')).place(x=20, y=140)
+        self.passwordEntry = customtkinter.CTkEntry(self.inputsFrame, placeholder_text="Enter Your Password", show="*", width=280, height=35)
+        self.passwordEntry.place(x=20, y=165)
+
+        self.signupButton = customtkinter.CTkButton(self.inputsFrame, width=280, height=40, text="SIGN UP", command=register)
+        self.signupButton.place(x=20, y=220)
+
+
+
     def dashboard_page(self):
-        self.clearFrames(self.page_container)
+        totalStudents = sisDatabase.countStudents()
+        totalAdmins = sisDatabase.countAdmins()
+        totalCourses = sisDatabase.countCourses()
+        
         self.dashboard_container = customtkinter.CTkFrame(self.page_container, fg_color='transparent')
         self.dashboard_container.pack(fill=BOTH, expand=YES)
-
-        # Dashboard Title
-        customtkinter.CTkLabel(self.dashboard_container, text="Dashboard", font=("Arial", 30, "bold")).pack(pady=20)
-
-        # Quick Stats Frame
-        quick_stats_frame = customtkinter.CTkFrame(self.dashboard_container, fg_color='white')
-        quick_stats_frame.pack(fill=BOTH, expand=YES, padx=20, pady=10)
-
-        # Add Quick Stats Widgets
-        customtkinter.CTkLabel(quick_stats_frame, text="Quick Stats", font=("Arial", 20, "bold")).pack(pady=10)
-
-        # You can add more widgets here for quick stats display, like total students, pending tasks, etc.
-        # Example:
-        customtkinter.CTkLabel(quick_stats_frame, text="Total Students: 1000").pack()
-        customtkinter.CTkLabel(quick_stats_frame, text="Pending Tasks: 5").pack()
-
-        # Recent Activities Frame
-        recent_activities_frame = customtkinter.CTkFrame(self.dashboard_container, fg_color='white')
-        recent_activities_frame.pack(fill=BOTH, expand=YES, padx=20, pady=10)
-
-        # Add Recent Activities Widgets
-        customtkinter.CTkLabel(recent_activities_frame, text="Recent Activities", font=("Arial", 20, "bold")).pack(pady=10)
-
-        # You can add more widgets here for recent activities display, like recent logins, submissions, etc.
-        # Example:
-        customtkinter.CTkLabel(recent_activities_frame, text="1. Logged in as admin (2 minutes ago)").pack(anchor="w", padx=10)
-        customtkinter.CTkLabel(recent_activities_frame, text="2. Submitted new student information (5 minutes ago)").pack(anchor="w", padx=10)
-
-        # Logout Button
-        customtkinter.CTkButton(self.dashboard_container, text="Logout", width=10, command=self.logout).pack(pady=20)
+        
+        self.fepc_logo = customtkinter.CTkImage(Image.open(fepc_logo_path),size=(60,60))
+        self.pageTitle = customtkinter.CTkLabel(self.dashboard_container, text=" DASHBOARD WINDOW", font=("Arial", 30, "bold"),image=self.fepc_logo,compound=LEFT)
+        self.pageTitle.pack(pady=20, anchor="center")
+        
+        self.actionsFrame = customtkinter.CTkFrame(self.dashboard_container)
+        self.actionsFrame.pack(fill=X, padx=30)
+        
+        self.welcomeAdminLabel = customtkinter.CTkLabel(self.actionsFrame, text="Welcome Admin!", font=("Arial", 15, "bold"))
+        self.welcomeAdminLabel.grid(row=0, column=0, padx=(20,850),  pady=10 ,stick="w")
+        
+        self.addAdminButton = customtkinter.CTkButton(self.actionsFrame, text="Add New Admin", height=45, command=lambda: self.changePage("signup_form_page"))
+        self.addAdminButton.grid(row=0, column=1, padx=5,pady=10 , stick="e")
+        
+        self.addAdminButton = customtkinter.CTkButton(self.actionsFrame, text="Add Student", height=45)
+        self.addAdminButton.grid(row=0, column=2, padx=5,pady=10, stick="e")
+        
+        self.totalsFrame = customtkinter.CTkFrame(self.dashboard_container)
+        self.totalsFrame.pack(fill=X, padx=30, pady=10)
+        
+        self.studentsTotalFrame = customtkinter.CTkFrame(self.totalsFrame, width=300, height=150, fg_color='blue')
+        self.studentsTotalFrame.grid(row=0, column=0, padx=10, pady=10, stick="w")
+        self.studentsTotalTitle = customtkinter.CTkLabel(self.studentsTotalFrame, text="Students", font=("Arial", 28, "bold"))
+        self.studentsTotalTitle.place(x=20, y=20)
+        self.studentsTotalLabel = customtkinter.CTkLabel(self.studentsTotalFrame, text=f"Total students: {totalStudents}", font=("Arial",18, "bold"))
+        self.studentsTotalLabel.place(x=20, y=100)
+        
+        self.adminsTotalFrame = customtkinter.CTkFrame(self.totalsFrame, width=300, height=150, fg_color='yellow')
+        self.adminsTotalFrame.grid(row=0, column=1, padx=10, pady=10, stick="w")
+        self.adminsTotalTitle = customtkinter.CTkLabel(self.adminsTotalFrame, text="Admins", font=("Arial", 28, "bold"), text_color="black")
+        self.adminsTotalTitle.place(x=20, y=20)
+        self.adminsTotalLabel = customtkinter.CTkLabel(self.adminsTotalFrame, text=f"Total admins: {totalAdmins}", font=("Arial",18, "bold"), text_color="black")
+        self.adminsTotalLabel.place(x=20, y=100)
+       
 
     def logout(self):
         # Add your logout logic here, for example, switch back to the login page
@@ -274,7 +355,9 @@ class App(customtkinter.CTk):
             course = self.course_option.get()
             semester = self.semester_option.get()
             
-            print(lrn, firstname, middlename, lastname, age, birthday, address, mobilenumber, gender, yearlevel, course, semester)
+            sisDatabase.insert_new_student(lrn, firstname, middlename, lastname, age, birthday, address, phonenumber, gender, yearlevel, course, semester)
+            
+            messagebox.showinfo("Success Message", "Student information saved.")
 
 
         self.saveButton = customtkinter.CTkButton(self.formsFrame, width=100, height=40, text="SAVE", command=save_student_info)

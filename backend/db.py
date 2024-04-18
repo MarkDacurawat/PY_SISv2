@@ -85,6 +85,64 @@ class SisDatabase:
             
         except sqlite3.Error as e:
             print("Error inserting admin:", e)
+            
+    def register_admin(self, username, password):
+        try:
+            # Compute the MD5 hash of the password
+            password_hash = hashlib.md5(password.encode()).hexdigest()
+
+            # Insert the user into the database
+            self.cursor.execute("INSERT INTO admin (username, password) VALUES (?, ?)", (username, password_hash))
+
+            self.conn.commit()
+            print("User registered successfully!")
+        except sqlite3.Error as e:
+            print("Error registering user:", e)
+    
+    # Check if admin exist
+    def check_username_exists(self, username):
+        try:
+            self.cursor.execute("SELECT * FROM admin WHERE username = ?", (username,))
+            result = self.cursor.fetchone()
+
+            if result:
+                return True
+            else:
+                return False
+        except Exception as e:
+            print("Internal Server Error ", e)
+    
+    def insert_new_student(self, lrn, first_name, middle_name, last_name, age, birthday, address, phone_number, gender, year_level, course_id, semester):
+        try:
+            self.cursor.execute("INSERT INTO students (lrn, first_name, middle_name, last_name, age, birthday, address, phone_number, gender, year_level, course_id, semester) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", (lrn, first_name, middle_name, last_name, age, birthday, address, phone_number, gender, year_level, course_id, semester))
+            self.conn.commit()
+            print("Student inserted successfully!")
+        except sqlite3.Error as e:
+            print("Error inserting student:", e)
+            
+    def countStudents(self):
+        try:
+            self.cursor.execute("SELECT COUNT(*) FROM students")
+            result = self.cursor.fetchone()
+            return result[0]
+        except Exception as e:
+            print("Internal Server Error ", e)
+    
+    def countCourses(self):
+        try:
+            self.cursor.execute("SELECT COUNT(*) FROM course")
+            result = self.cursor.fetchone()
+            return result[0]
+        except Exception as e:
+            print("Internal Server Error ", e)
+            
+    def countAdmins(self):
+        try:
+            self.cursor.execute("SELECT COUNT(*) FROM admin")
+            result = self.cursor.fetchone()
+            return result[0]
+        except Exception as e:
+            print("Internal Server Error ", e)
 
     
     def drop_tables(self):
