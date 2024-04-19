@@ -18,10 +18,13 @@ class App(customtkinter.CTk):
         self.title("Far Eastern Polytechnic College | Student Information System")
         self.geometry("1360x690+0+0")
         self.resizable(width=FALSE, height=FALSE)
-        self.current_page_index = 3
+        self.current_page_index = 0
         self.pages = [self.user_type_page, self.login_form_page , self.student_form_page, self.dashboard_page, self.signup_form_page]
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("green")
+        
+        self.userLoggedIn = False
+        self.userDetails = None
         
         self.main_frame = customtkinter.CTkFrame(self, fg_color='transparent')
         self.main_frame.pack(fill=BOTH, expand=YES)
@@ -96,6 +99,8 @@ class App(customtkinter.CTk):
             if result:
                 user = result[1]
                 messagebox.showinfo("Login Successfully!", f"Welcome! Admin {user}")
+                self.userLoggedIn = True
+                self.userDetails = user
                 self.changePage("dashboard_page")
             else:
                 messagebox.showerror("Login Error", "Invalid username or password")
@@ -211,13 +216,13 @@ class App(customtkinter.CTk):
         self.actionsFrame = customtkinter.CTkFrame(self.dashboard_container)
         self.actionsFrame.pack(fill=X, padx=30)
         
-        self.welcomeAdminLabel = customtkinter.CTkLabel(self.actionsFrame, text="Welcome Admin!", font=("Arial", 15, "bold"))
+        self.welcomeAdminLabel = customtkinter.CTkLabel(self.actionsFrame, text="Welcome Admin "+f"{self.userDetails}".upper(), font=("Arial", 15, "bold"))
         self.welcomeAdminLabel.grid(row=0, column=0, padx=(20,850),  pady=10 ,stick="w")
         
         self.addAdminButton = customtkinter.CTkButton(self.actionsFrame, text="Add New Admin", height=45, command=lambda: self.changePage("signup_form_page"))
         self.addAdminButton.grid(row=0, column=1, padx=5,pady=10 , stick="e")
         
-        self.addAdminButton = customtkinter.CTkButton(self.actionsFrame, text="Add Student", height=45)
+        self.addAdminButton = customtkinter.CTkButton(self.actionsFrame, text="Add Student", height=45, command=lambda: self.changePage("student_form_page"))
         self.addAdminButton.grid(row=0, column=2, padx=5,pady=10, stick="e")
         
         self.totalsFrame = customtkinter.CTkFrame(self.dashboard_container)
@@ -241,6 +246,8 @@ class App(customtkinter.CTk):
     def logout(self):
         # Add your logout logic here, for example, switch back to the login page
         self.changePage("login_form_page")
+        self.userLoggedIn = False
+        self.userDetails = None
 
     def student_form_page(self):
         self.lrn_pattern = re.compile(r'^\d{12}$')
