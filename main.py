@@ -23,6 +23,17 @@ class App(customtkinter.CTk):
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("green")
         
+        # Regex
+        self.lrn_pattern = re.compile(r'^\d{12}$')
+        self.first_name_pattern = re.compile(r'^[A-Za-z]{1,30}(?: [A-Za-z]{1,30})?$')
+        self.middle_name_pattern = re.compile(r'^[A-Za-z]+(?: [A-Za-z]+)?$')
+        self.last_name_pattern = re.compile(r'^[A-Za-z]{1,30}(?: [A-Za-z]{1,30})?$')
+        self.address_pattern = re.compile(r'^[A-Za-z0-9\s\.,#-]{1,100}$')
+        self.age_pattern = re.compile(r'^\d+$')
+        self.birthday_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+        self.phone_number_pattern = re.compile(r'^\d{11}$')
+        
+        # Admin Login
         self.userLoggedIn = False
         self.userDetails = None
         
@@ -82,13 +93,42 @@ class App(customtkinter.CTk):
         self.pageTitle.pack(pady=20, anchor="center")
         
         # Student Or Admin Button
-        self.accountPickerFrame = customtkinter.CTkFrame(self.user_type_container,width=380,height=50,fg_color='transparent')
-        self.accountPickerFrame.pack(pady=70, anchor="center")
+        # self.accountPickerFrame = customtkinter.CTkFrame(self.user_type_container,width=380,height=50)
+        # self.accountPickerFrame.pack(pady=70, anchor="center")
         
-        self.studentButton = customtkinter.CTkButton(self.accountPickerFrame,text="Student", width=180, height=50, command=openStudentForm)
-        self.studentButton.place(x=0,y=0)
-        self.adminButton = customtkinter.CTkButton(self.accountPickerFrame,text="Admin",  width=180, height=50, command=openLoginWindow)
-        self.adminButton.place(x=200,y=0)
+        # self.studentButton = customtkinter.CTkButton(self.accountPickerFrame,text="Student", width=180, height=50, command=openStudentForm)
+        # self.studentButton.place(x=0,y=0)
+        # self.adminButton = customtkinter.CTkButton(self.accountPickerFrame,text="Admin",  width=180, height=50, command=openLoginWindow)
+        # self.adminButton.place(x=200,y=0)
+        
+        self.accountPickerFrame = customtkinter.CTkFrame(self.user_type_container, width=1000, height=500)
+        self.accountPickerFrame.pack(pady=20, anchor="center")
+        
+        self.studentChoiceFrame = customtkinter.CTkFrame(self.accountPickerFrame,width=300,height=400)
+        self.studentChoiceFrame.pack(pady=20, side=LEFT, padx=40)
+        
+        self.graduationCapImage = customtkinter.CTkImage(Image.open(os.path.join(current_directory, 'images', 'student.png')),size=(100,100))
+        self.studentImage = customtkinter.CTkLabel(self.studentChoiceFrame,text="",bg_color="transparent", fg_color="transparent" , font=("Arial", 20, "bold"),image=self.graduationCapImage)
+        self.studentImage.place(x=20,y=150)
+        
+        self.studentText = customtkinter.CTkLabel(self.studentChoiceFrame,text="I am Student",bg_color="transparent", fg_color="transparent" , font=("Arial", 35, "bold"))
+        self.studentText.place(x=20,y=270)
+        
+        self.studentButton = customtkinter.CTkButton(self.studentChoiceFrame,text="CHOOSE", width=260, height=50,command=openStudentForm)
+        self.studentButton.place(x=20,y=320)
+        
+        self.adminChoiceFrame = customtkinter.CTkFrame(self.accountPickerFrame,width=300,height=400)
+        self.adminChoiceFrame.pack(pady=20, side=RIGHT, padx=40)
+        
+        self.graduationCapImage = customtkinter.CTkImage(Image.open(os.path.join(current_directory, 'images', 'admin.png')),size=(100,100))
+        self.adminImage = customtkinter.CTkLabel(self.adminChoiceFrame,text="",bg_color="transparent", fg_color="transparent" , font=("Arial", 20, "bold"),image=self.graduationCapImage)
+        self.adminImage.place(x=20,y=150)
+        
+        self.adminText = customtkinter.CTkLabel(self.adminChoiceFrame,text="I am Admin",bg_color="transparent", fg_color="transparent" , font=("Arial", 35, "bold"))
+        self.adminText.place(x=20,y=270)
+        
+        self.adminButton = customtkinter.CTkButton(self.adminChoiceFrame,text="CHOOSE",fg_color="blue", hover_color="darkblue" , width=260, height=50, command=openLoginWindow)
+        self.adminButton.place(x=20,y=320)
     
     def login_form_page(self):
         
@@ -202,6 +242,19 @@ class App(customtkinter.CTk):
 
 
     def dashboard_page(self):
+        
+        def findStudentByLRN():
+            lrn = self.findStudentEntry.get()
+            if self.lrn_pattern.match(lrn):
+                student = sisDatabase.findStudentByLRN(lrn)
+                if student:
+                    print(student)
+                else:
+                    messagebox.showerror("No Student Found", "No student found with that LRN!")
+            else:
+                messagebox.showerror("Invalid LRN", "LRN must be a 12 digit number!")
+            
+        
         totalStudents = sisDatabase.countStudents()
         totalAdmins = sisDatabase.countAdmins()
         totalCourses = sisDatabase.countCourses()
@@ -213,17 +266,23 @@ class App(customtkinter.CTk):
         self.pageTitle = customtkinter.CTkLabel(self.dashboard_container, text=" DASHBOARD WINDOW", font=("Arial", 30, "bold"),image=self.fepc_logo,compound=LEFT)
         self.pageTitle.pack(pady=20, anchor="center")
         
+        self.addAdminButton = customtkinter.CTkButton(self.dashboard_container, text="Add New Admin", height=45, command=lambda: self.changePage("signup_form_page"))
+        self.addAdminButton.place(x=1030, y=45)
+        
+        self.addAdminButton = customtkinter.CTkButton(self.dashboard_container, text="Add Student", height=45, command=lambda: self.changePage("student_form_page"))
+        self.addAdminButton.place(x=1180, y=45)
+        
         self.actionsFrame = customtkinter.CTkFrame(self.dashboard_container)
         self.actionsFrame.pack(fill=X, padx=30)
         
         self.welcomeAdminLabel = customtkinter.CTkLabel(self.actionsFrame, text="Welcome Admin "+f"{self.userDetails}".upper(), font=("Arial", 15, "bold"))
-        self.welcomeAdminLabel.grid(row=0, column=0, padx=(20,850),  pady=10 ,stick="w")
+        self.welcomeAdminLabel.pack(side=LEFT, padx=10, pady=10)
         
-        self.addAdminButton = customtkinter.CTkButton(self.actionsFrame, text="Add New Admin", height=45, command=lambda: self.changePage("signup_form_page"))
-        self.addAdminButton.grid(row=0, column=1, padx=5,pady=10 , stick="e")
+        self.findStudentButton = customtkinter.CTkButton(self.actionsFrame, text="Find Student", fg_color="yellow", hover_color="yellow", text_color="black" , height=45, command=findStudentByLRN)
+        self.findStudentButton.pack(side=RIGHT, pady=10, padx=10)
         
-        self.addAdminButton = customtkinter.CTkButton(self.actionsFrame, text="Add Student", height=45, command=lambda: self.changePage("student_form_page"))
-        self.addAdminButton.grid(row=0, column=2, padx=5,pady=10, stick="e")
+        self.findStudentEntry = customtkinter.CTkEntry(self.actionsFrame, placeholder_text="Enter a Student LRN", width=220, height=45)
+        self.findStudentEntry.pack(side=RIGHT, pady=10)
         
         self.totalsFrame = customtkinter.CTkFrame(self.dashboard_container)
         self.totalsFrame.pack(fill=X, padx=30, pady=10)
@@ -248,16 +307,19 @@ class App(customtkinter.CTk):
         self.changePage("login_form_page")
         self.userLoggedIn = False
         self.userDetails = None
+        
+    def view_student_page(self):
+        self.view_student_container = customtkinter.CTkFrame(self.page_container, width=1920, height=680, fg_color='transparent')
+        self.view_student_container.pack(fill=BOTH, expand=YES)
+        
+        self.fepc_logo = customtkinter.CTkImage(Image.open(fepc_logo_path), size=(60, 60))
+        self.pageTitle = customtkinter.CTkLabel(self.view_student_container, text=" STUDENT VIEW", font=("Arial", 30, "bold"), image=self.fepc_logo, compound=LEFT)
+        self.pageTitle.pack(pady=20, anchor="center")
+        
+        
+        
 
     def student_form_page(self):
-        self.lrn_pattern = re.compile(r'^\d{12}$')
-        self.first_name_pattern = re.compile(r'^[A-Za-z]{1,30}(?: [A-Za-z]{1,30})?$')
-        self.middle_name_pattern = re.compile(r'^[A-Za-z]+(?: [A-Za-z]+)?$')
-        self.last_name_pattern = re.compile(r'^[A-Za-z]{1,30}(?: [A-Za-z]{1,30})?$')
-        self.address_pattern = re.compile(r'^[A-Za-z0-9\s\.,#-]{1,100}$')
-        self.age_pattern = re.compile(r'^\d+$')
-        self.birthday_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}$')
-        self.phone_number_pattern = re.compile(r'^\d{11}$')
         
         # X and Y positioning
         self.column = {
@@ -281,6 +343,13 @@ class App(customtkinter.CTk):
         # GUI Components
         self.pageTitle = customtkinter.CTkLabel(self.student_form_container, text="STUDENT INFORMATION SYSTEM", font=("Arial", 30, "bold"), image=self.fepc_logo, compound=LEFT)
         self.pageTitle.pack(pady=20, anchor="center")
+        
+        if self.userLoggedIn:
+            self.backButton = customtkinter.CTkButton(self.student_form_container, text="Back", height=45,fg_color="yellow", text_color="black", hover="FALSE" , command=lambda: self.changePage("dashboard_page"))
+            self.backButton.place(x=30, y=20)
+        else:
+            self.backButton = customtkinter.CTkButton(self.student_form_container, text="Back", height=45, command=lambda: self.changePage("user_type_page"))
+            self.backButton.place(x=30, y=20)
 
         self.create_forms()
         

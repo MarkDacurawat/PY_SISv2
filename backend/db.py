@@ -120,6 +120,18 @@ class SisDatabase:
         except sqlite3.Error as e:
             print("Error inserting student:", e)
             
+    def findStudentByLRN(self, lrn):
+        try:
+            self.cursor.execute("SELECT * FROM students WHERE lrn = ? ", (lrn,))
+            result = self.cursor.fetchone()
+            
+            if result:
+                return result
+            else:
+                return None
+        except Exception as e:
+            print("Internal Server Error ", e)
+            
     def countStudents(self):
         try:
             self.cursor.execute("SELECT COUNT(*) FROM students")
