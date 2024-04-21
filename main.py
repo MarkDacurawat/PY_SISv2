@@ -57,7 +57,7 @@ class App(customtkinter.CTk):
         self.page_container = customtkinter.CTkFrame(self.main_frame, fg_color='transparent')
         self.page_container.pack(fill=BOTH, expand=YES)
     
-    def changePage(self, page_name):
+    def changePage(self, page_name, student=None):
         self.clearFrames(self.page_container)
         
         match page_name:
@@ -68,7 +68,10 @@ class App(customtkinter.CTk):
                 self.pages[1]()
                 self.current_page_index = 1
             case "student_form_page":
-                self.pages[2]()
+                self.pages[2](method="SAVE")
+                self.current_page_index = 2
+            case "view_student_page":
+                self.pages[2](method="UPDATE", student=student)
                 self.current_page_index = 2
             case "dashboard_page":
                 self.pages[3]()
@@ -76,6 +79,7 @@ class App(customtkinter.CTk):
             case "signup_form_page":
                 self.pages[4]()
                 self.current_page_index = 4
+            
         
     def user_type_page(self):
         def openLoginWindow():
@@ -91,15 +95,6 @@ class App(customtkinter.CTk):
         self.fepc_logo = customtkinter.CTkImage(Image.open(fepc_logo_path),size=(60,60))
         self.pageTitle = customtkinter.CTkLabel(self.user_type_container, text=" STUDENT INFORMATION SYSTEM", font=("Arial", 30, "bold"),image=self.fepc_logo,compound=LEFT)
         self.pageTitle.pack(pady=20, anchor="center")
-        
-        # Student Or Admin Button
-        # self.accountPickerFrame = customtkinter.CTkFrame(self.user_type_container,width=380,height=50)
-        # self.accountPickerFrame.pack(pady=70, anchor="center")
-        
-        # self.studentButton = customtkinter.CTkButton(self.accountPickerFrame,text="Student", width=180, height=50, command=openStudentForm)
-        # self.studentButton.place(x=0,y=0)
-        # self.adminButton = customtkinter.CTkButton(self.accountPickerFrame,text="Admin",  width=180, height=50, command=openLoginWindow)
-        # self.adminButton.place(x=200,y=0)
         
         self.accountPickerFrame = customtkinter.CTkFrame(self.user_type_container, width=1000, height=500)
         self.accountPickerFrame.pack(pady=20, anchor="center")
@@ -248,7 +243,7 @@ class App(customtkinter.CTk):
             if self.lrn_pattern.match(lrn):
                 student = sisDatabase.findStudentByLRN(lrn)
                 if student:
-                    print(student)
+                    self.changePage("view_student_page", student=student)
                 else:
                     messagebox.showerror("No Student Found", "No student found with that LRN!")
             else:
@@ -269,8 +264,8 @@ class App(customtkinter.CTk):
         self.addAdminButton = customtkinter.CTkButton(self.dashboard_container, text="Add New Admin", height=45, command=lambda: self.changePage("signup_form_page"))
         self.addAdminButton.place(x=1030, y=45)
         
-        self.addAdminButton = customtkinter.CTkButton(self.dashboard_container, text="Add Student", height=45, command=lambda: self.changePage("student_form_page"))
-        self.addAdminButton.place(x=1180, y=45)
+        self.addStudentButton = customtkinter.CTkButton(self.dashboard_container, text="Add Student", height=45, command=lambda: self.changePage("student_form_page"))
+        self.addStudentButton.place(x=1180, y=45)
         
         self.actionsFrame = customtkinter.CTkFrame(self.dashboard_container)
         self.actionsFrame.pack(fill=X, padx=30)
@@ -308,18 +303,9 @@ class App(customtkinter.CTk):
         self.userLoggedIn = False
         self.userDetails = None
         
-    def view_student_page(self):
-        self.view_student_container = customtkinter.CTkFrame(self.page_container, width=1920, height=680, fg_color='transparent')
-        self.view_student_container.pack(fill=BOTH, expand=YES)
-        
-        self.fepc_logo = customtkinter.CTkImage(Image.open(fepc_logo_path), size=(60, 60))
-        self.pageTitle = customtkinter.CTkLabel(self.view_student_container, text=" STUDENT VIEW", font=("Arial", 30, "bold"), image=self.fepc_logo, compound=LEFT)
-        self.pageTitle.pack(pady=20, anchor="center")
-        
-        
         
 
-    def student_form_page(self):
+    def student_form_page(self, method="UPDATE", student=None):
         
         # X and Y positioning
         self.column = {
@@ -334,6 +320,23 @@ class App(customtkinter.CTk):
             "third": 155,
             "fourth": 220,
         }
+        
+        def configEntries():
+            self.lrn_entry.insert(0, student[1])
+            self.firstname_entry.insert(0, student[2])
+            self.middlename_entry.insert(0, student[3])
+            self.lastname_entry.insert(0, student[4])
+            self.age_entry.insert(0, student[5])
+            self.birthday_entry.insert(0, student[6])
+            self.address_entry.insert(0, student[7])
+            self.phonenumber_entry.insert(0, student[8])
+            self.gender_option.set(student[9])
+            self.yearlevel_option.set(student[10])
+            self.course_option.set(student[11])
+            self.semester_option.set(student[12])
+            
+            
+        
         self.student_form_container = customtkinter.CTkFrame(self.page_container, width=1920, height=680, fg_color='transparent')
         self.student_form_container.pack(fill=BOTH, expand=YES)
 
@@ -341,17 +344,21 @@ class App(customtkinter.CTk):
         self.fepc_logo = customtkinter.CTkImage(Image.open(fepc_logo_path), size=(60, 60))
 
         # GUI Components
-        self.pageTitle = customtkinter.CTkLabel(self.student_form_container, text="STUDENT INFORMATION SYSTEM", font=("Arial", 30, "bold"), image=self.fepc_logo, compound=LEFT)
+        self.pageTitle = customtkinter.CTkLabel(self.student_form_container, text=" STUDENT INFORMATION SYSTEM", font=("Arial", 30, "bold"), image=self.fepc_logo, compound=LEFT)
         self.pageTitle.pack(pady=20, anchor="center")
         
         if self.userLoggedIn:
-            self.backButton = customtkinter.CTkButton(self.student_form_container, text="Back", height=45,fg_color="yellow", text_color="black", hover="FALSE" , command=lambda: self.changePage("dashboard_page"))
+            self.backButton = customtkinter.CTkButton(self.student_form_container, text="Back", height=45,fg_color="blue",  hover_color="darkblue" , command=lambda: self.changePage("dashboard_page"))
             self.backButton.place(x=30, y=20)
         else:
             self.backButton = customtkinter.CTkButton(self.student_form_container, text="Back", height=45, command=lambda: self.changePage("user_type_page"))
             self.backButton.place(x=30, y=20)
 
-        self.create_forms()
+        self.create_forms(method=method)
+
+        if method == "UPDATE" and  student:
+            configEntries()
+        
         
     def validate_entry(self, value, pattern):
         if pattern.match(value):
@@ -359,7 +366,7 @@ class App(customtkinter.CTk):
         else:
             return False
         
-    def create_forms(self):
+    def create_forms(self, method="SAVE"):
         # Forms Frame
         self.formsFrame = customtkinter.CTkFrame(self.student_form_container, height=400)
         self.formsFrame.pack(fill=X, padx=30)
@@ -436,8 +443,14 @@ class App(customtkinter.CTk):
             messagebox.showinfo("Success Message", "Student information saved.")
 
 
-        self.saveButton = customtkinter.CTkButton(self.formsFrame, width=100, height=40, text="SAVE", command=save_student_info)
-        self.saveButton.place(y=250, x=55)
+        if(method == "SAVE"):
+            self.saveButton = customtkinter.CTkButton(self.formsFrame, width=1200, height=40, text="SAVE", command=save_student_info)
+            self.saveButton.place(y=320, x=55)
+        else:
+            self.updateButton = customtkinter.CTkButton(self.formsFrame, width=1200, height=40,fg_color="blue", hover_color="darkblue", text="UPDATE")
+            self.updateButton.place(y=320, x=55)
+        
+        
         
         
     def create_form_entry(self, frame, label_text, placeholder_text, y_position, x_position):
