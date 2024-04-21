@@ -79,6 +79,11 @@ class App(customtkinter.CTk):
             case "signup_form_page":
                 self.pages[4]()
                 self.current_page_index = 4
+                
+    def windowTitle(self, parent, title):
+        fepc_logo = customtkinter.CTkImage(Image.open(fepc_logo_path),size=(60,60))
+        pageTitle = customtkinter.CTkLabel(parent, text=f" {title}", font=("Arial", 30, "bold"),image=fepc_logo,compound=LEFT)
+        pageTitle.pack(pady=20, anchor="center")
             
         
     def user_type_page(self):
@@ -92,9 +97,7 @@ class App(customtkinter.CTk):
         self.user_type_container = customtkinter.CTkFrame(self.page_container, fg_color='transparent')
         self.user_type_container.pack(fill=BOTH, expand=YES)
         
-        self.fepc_logo = customtkinter.CTkImage(Image.open(fepc_logo_path),size=(60,60))
-        self.pageTitle = customtkinter.CTkLabel(self.user_type_container, text=" STUDENT INFORMATION SYSTEM", font=("Arial", 30, "bold"),image=self.fepc_logo,compound=LEFT)
-        self.pageTitle.pack(pady=20, anchor="center")
+        self.windowTitle(self.user_type_container, "STUDENT INFORMATION SYSTEM")
         
         self.accountPickerFrame = customtkinter.CTkFrame(self.user_type_container, width=1000, height=500)
         self.accountPickerFrame.pack(pady=20, anchor="center")
@@ -238,6 +241,14 @@ class App(customtkinter.CTk):
 
     def dashboard_page(self):
         
+        def createTotalFrame(parent, totalTitle, totalText, totalCount,color ,  row_position, column_position):
+            totalFrame = customtkinter.CTkFrame(parent, width=300, height=150, fg_color=f"{color}")
+            totalFrame.grid(row=row_position, column=column_position, padx=10, pady=10, stick="w")
+            totalTitle = customtkinter.CTkLabel(totalFrame, text=f"{totalTitle}", font=("Arial", 28, "bold"), text_color="white")
+            totalTitle.place(x=20, y=20)
+            totalLabel = customtkinter.CTkLabel(totalFrame, text=f"Total {totalText}: {totalCount}", font=("Arial",18, "bold"), text_color="white")
+            totalLabel.place(x=20, y=100)
+        
         def findStudentByLRN():
             lrn = self.findStudentEntry.get()
             if self.lrn_pattern.match(lrn):
@@ -282,19 +293,16 @@ class App(customtkinter.CTk):
         self.totalsFrame = customtkinter.CTkFrame(self.dashboard_container)
         self.totalsFrame.pack(fill=X, padx=30, pady=10)
         
-        self.studentsTotalFrame = customtkinter.CTkFrame(self.totalsFrame, width=300, height=150, fg_color='blue')
-        self.studentsTotalFrame.grid(row=0, column=0, padx=10, pady=10, stick="w")
-        self.studentsTotalTitle = customtkinter.CTkLabel(self.studentsTotalFrame, text="Students", font=("Arial", 28, "bold"))
-        self.studentsTotalTitle.place(x=20, y=20)
-        self.studentsTotalLabel = customtkinter.CTkLabel(self.studentsTotalFrame, text=f"Total students: {totalStudents}", font=("Arial",18, "bold"))
-        self.studentsTotalLabel.place(x=20, y=100)
+        # ['B.S Computer Science', 'B.S Tourism Mngt.', 'B.S Hospitality Mngt.', 'B.S Bus. Administration', 'BTVTed Education']
+        createTotalFrame(self.totalsFrame, "Students", "student", totalStudents, "#486581",0,0)
+        createTotalFrame(self.totalsFrame, "Computer Science", "BSCS student", 24, "#800000", 0,1)
+        createTotalFrame(self.totalsFrame, "Hospitality Mngt", "BSHM student", 12, "#41B06E",0,2)
+        createTotalFrame(self.totalsFrame, "Tourism Mngt", "BSTM student", 25, "#5E1675", 0,3)
+        createTotalFrame(self.totalsFrame, "Admins", "admins", totalAdmins, "#486581", 1, 0)
+        createTotalFrame(self.totalsFrame, "Bus. Administration", "BSBA student", 12, "#FFD23F", 1, 1)
+        createTotalFrame(self.totalsFrame, "Education", "BTVTed student", 12, "#074173", 1, 2)
+    
         
-        self.adminsTotalFrame = customtkinter.CTkFrame(self.totalsFrame, width=300, height=150, fg_color='yellow')
-        self.adminsTotalFrame.grid(row=0, column=1, padx=10, pady=10, stick="w")
-        self.adminsTotalTitle = customtkinter.CTkLabel(self.adminsTotalFrame, text="Admins", font=("Arial", 28, "bold"), text_color="black")
-        self.adminsTotalTitle.place(x=20, y=20)
-        self.adminsTotalLabel = customtkinter.CTkLabel(self.adminsTotalFrame, text=f"Total admins: {totalAdmins}", font=("Arial",18, "bold"), text_color="black")
-        self.adminsTotalLabel.place(x=20, y=100)
        
 
     def logout(self):
@@ -340,12 +348,7 @@ class App(customtkinter.CTk):
         self.student_form_container = customtkinter.CTkFrame(self.page_container, width=1920, height=680, fg_color='transparent')
         self.student_form_container.pack(fill=BOTH, expand=YES)
 
-        # Load logo
-        self.fepc_logo = customtkinter.CTkImage(Image.open(fepc_logo_path), size=(60, 60))
-
-        # GUI Components
-        self.pageTitle = customtkinter.CTkLabel(self.student_form_container, text=" STUDENT INFORMATION SYSTEM", font=("Arial", 30, "bold"), image=self.fepc_logo, compound=LEFT)
-        self.pageTitle.pack(pady=20, anchor="center")
+        self.windowTitle(self.student_form_container, "STUDENT FORM WINDOW")
         
         if self.userLoggedIn:
             self.backButton = customtkinter.CTkButton(self.student_form_container, text="Back", height=45,fg_color="blue",  hover_color="darkblue" , command=lambda: self.changePage("dashboard_page"))
