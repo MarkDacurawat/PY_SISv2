@@ -18,13 +18,6 @@ class SisDatabase:
     
     def create_tables(self):
         try:
-            self.cursor.execute("""
-                CREATE TABLE IF NOT EXISTS course (
-                    id INTEGER PRIMARY KEY,
-                    course_name VARCHAR(50) UNIQUE
-                )
-            """)
-        
             self.cursor.execute(""" 
                 CREATE TABLE IF NOT EXISTS students (
                     id INTEGER PRIMARY KEY,
@@ -38,9 +31,8 @@ class SisDatabase:
                     phone_number VARCHAR(15),
                     gender TEXT CHECK (gender IN ('Male', 'Female', 'Other')),
                     year_level INTEGER,
-                    course_id INTEGER,
-                    semester VARCHAR(10),
-                    FOREIGN KEY(course_id) REFERENCES course(id)
+                    course VARCHAR(25),
+                    semester VARCHAR(10)
                 )
             """)
             
@@ -112,13 +104,37 @@ class SisDatabase:
         except Exception as e:
             print("Internal Server Error ", e)
     
-    def insert_new_student(self, lrn, first_name, middle_name, last_name, age, birthday, address, phone_number, gender, year_level, course_id, semester):
+    def insert_new_student(self, lrn, first_name, middle_name, last_name, age, birthday, address, phone_number, gender, year_level, course, semester):
         try:
-            self.cursor.execute("INSERT INTO students (lrn, first_name, middle_name, last_name, age, birthday, address, phone_number, gender, year_level, course_id, semester) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", (lrn, first_name, middle_name, last_name, age, birthday, address, phone_number, gender, year_level, course_id, semester))
+            self.cursor.execute("INSERT INTO students (lrn, first_name, middle_name, last_name, age, birthday, address, phone_number, gender, year_level, course, semester) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", (lrn, first_name, middle_name, last_name, age, birthday, address, phone_number, gender, year_level, course, semester))
             self.conn.commit()
             print("Student inserted successfully!")
         except sqlite3.Error as e:
             print("Error inserting student:", e)
+            
+    def update_student(self, lrn, first_name, middle_name, last_name, age, birthday, address, phone_number, gender, year_level, course, semester):
+        try:
+            self.cursor.execute("""
+                UPDATE students
+                SET 
+                    first_name = ?,
+                    middle_name = ?,
+                    last_name = ?,
+                    age = ?,
+                    birthday = ?,
+                    address = ?,
+                    phone_number = ?,
+                    gender = ?,
+                    year_level = ?,
+                    course = ?,
+                    semester = ?
+                WHERE lrn = ?
+            """, (first_name, middle_name, last_name, age, birthday, address, phone_number, gender, year_level, course, semester, lrn))
+            
+            self.conn.commit()
+            print("Student updated successfully!")
+        except sqlite3.Error as e:
+            print("Error updating student:", e)
             
     def findStudentByLRN(self, lrn):
         try:
@@ -140,13 +156,46 @@ class SisDatabase:
         except Exception as e:
             print("Internal Server Error ", e)
     
-    def countCourses(self):
+    def countBSCS(self):
         try:
-            self.cursor.execute("SELECT COUNT(*) FROM course")
+            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'B.S Computer Science'")
             result = self.cursor.fetchone()
             return result[0]
         except Exception as e:
             print("Internal Server Error ", e)
+            
+    def countBSTM(self):
+        try:
+            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'B.S Tourism Mngt'")
+            result = self.cursor.fetchone()
+            return result[0]
+        except Exception as e:
+            print("Internal Server Error ", e)
+            
+    def countBSHM(self):
+        try:
+            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'B.S Hospitality Mngt'")
+            result = self.cursor.fetchone()
+            return result[0]
+        except Exception as e:
+            print("Internal Server Error ", e)
+            
+    def countBSBA(self):
+        try:
+            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'B.S Bus. Administration'")
+            result = self.cursor.fetchone()
+            return result[0]
+        except Exception as e:
+            print("Internal Server Error ", e)
+            
+    def countBTVTed(self):
+        try:
+            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'BTVTed Education'")
+            result = self.cursor.fetchone()
+            return result[0]
+        except Exception as e:
+            print("Internal Server Error ", e)
+            
             
     def countAdmins(self):
         try:

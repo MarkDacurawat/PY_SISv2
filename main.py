@@ -263,7 +263,11 @@ class App(customtkinter.CTk):
         
         totalStudents = sisDatabase.countStudents()
         totalAdmins = sisDatabase.countAdmins()
-        totalCourses = sisDatabase.countCourses()
+        totalBSCS = sisDatabase.countBSCS()
+        totalBSTM = sisDatabase.countBSTM()
+        totalBSHM = sisDatabase.countBSHM()
+        totalBSBA = sisDatabase.countBSBA()
+        totalBTVTed = sisDatabase.countBTVTed()
         
         self.dashboard_container = customtkinter.CTkFrame(self.page_container, fg_color='transparent')
         self.dashboard_container.pack(fill=BOTH, expand=YES)
@@ -295,12 +299,12 @@ class App(customtkinter.CTk):
         
         # ['B.S Computer Science', 'B.S Tourism Mngt.', 'B.S Hospitality Mngt.', 'B.S Bus. Administration', 'BTVTed Education']
         createTotalFrame(self.totalsFrame, "Students", "student", totalStudents, "#486581",0,0)
-        createTotalFrame(self.totalsFrame, "Computer Science", "BSCS student", 24, "#800000", 0,1)
-        createTotalFrame(self.totalsFrame, "Hospitality Mngt", "BSHM student", 12, "#41B06E",0,2)
-        createTotalFrame(self.totalsFrame, "Tourism Mngt", "BSTM student", 25, "#5E1675", 0,3)
+        createTotalFrame(self.totalsFrame, "Computer Science", "BSCS student", totalBSCS, "#800000", 0,1)
+        createTotalFrame(self.totalsFrame, "Hospitality Mngt", "BSHM student", totalBSHM, "#41B06E",0,2)
+        createTotalFrame(self.totalsFrame, "Tourism Mngt", "BSTM student", totalBSTM, "#5E1675", 0,3)
         createTotalFrame(self.totalsFrame, "Admins", "admins", totalAdmins, "#486581", 1, 0)
-        createTotalFrame(self.totalsFrame, "Bus. Administration", "BSBA student", 12, "#FFD23F", 1, 1)
-        createTotalFrame(self.totalsFrame, "Education", "BTVTed student", 12, "#074173", 1, 2)
+        createTotalFrame(self.totalsFrame, "Bus. Administration", "BSBA student", totalBSBA, "#FFD23F", 1, 1)
+        createTotalFrame(self.totalsFrame, "Education", "BTVTed student", totalBTVTed, "#074173", 1, 2)
     
         
        
@@ -384,7 +388,7 @@ class App(customtkinter.CTk):
         self.phonenumber_entry  =  self.create_form_entry(self.formsFrame, "PHONE #:", "e.g 09212121212",self.row["fourth"], self.column["second"])
         self.gender_option  =  self.create_form_option_menu(self.formsFrame, "GENDER:", ['Male', 'Female'],self.row["first"], self.column["third"])
         self.yearlevel_option  =  self.create_form_option_menu(self.formsFrame, "YEAR LEVEL:", ['1st Year', '2nd Year', '3rd Year', '4th Year'],self.row["second"], self.column["third"])
-        self.course_option  =  self.create_form_option_menu(self.formsFrame, "COURSE:", ['B.S Computer Science', 'B.S Tourism Mngt.', 'B.S Hospitality Mngt.', 'B.S Bus. Administration', 'BTVTed Education'],self.row["third"], self.column["third"])
+        self.course_option  =  self.create_form_option_menu(self.formsFrame, "COURSE:", ['B.S Computer Science', 'B.S Tourism Mngt', 'B.S Hospitality Mngt', 'B.S Bus. Administration', 'BTVTed Education'],self.row["third"], self.column["third"])
         self.semester_option  =  self.create_form_option_menu(self.formsFrame, "SEMESTER:", ["1st Semester", "2nd Semester"],self.row["fourth"], self.column["third"])
 
         def validate(): 
@@ -444,13 +448,36 @@ class App(customtkinter.CTk):
             sisDatabase.insert_new_student(lrn, firstname, middlename, lastname, age, birthday, address, phonenumber, gender, yearlevel, course, semester)
             
             messagebox.showinfo("Success Message", "Student information saved.")
+            self.changePage('user_type_page')
+            
+        def update_student_info():
+            if not validate():
+                return
+            
+            lrn = self.lrn_entry.get()
+            firstname = self.firstname_entry.get()
+            middlename = self.middlename_entry.get()
+            lastname = self.lastname_entry.get()
+            age = self.age_entry.get()
+            birthday = self.birthday_entry.get()
+            address = self.address_entry.get()
+            phonenumber = self.phonenumber_entry.get()
+            gender = self.gender_option.get()
+            yearlevel = self.yearlevel_option.get()
+            course = self.course_option.get()
+            semester = self.semester_option.get()
+            
+            sisDatabase.update_student(lrn, firstname, middlename, lastname, age, birthday, address, phonenumber, gender, yearlevel, course, semester)
+            
+            messagebox.showinfo("Success Message", "Student information saved.")
+            self.changePage("dashboard_page")
 
 
         if(method == "SAVE"):
             self.saveButton = customtkinter.CTkButton(self.formsFrame, width=1200, height=40, text="SAVE", command=save_student_info)
             self.saveButton.place(y=320, x=55)
         else:
-            self.updateButton = customtkinter.CTkButton(self.formsFrame, width=1200, height=40,fg_color="blue", hover_color="darkblue", text="UPDATE")
+            self.updateButton = customtkinter.CTkButton(self.formsFrame, width=1200, height=40,fg_color="blue", hover_color="darkblue", text="UPDATE" , command=update_student_info)
             self.updateButton.place(y=320, x=55)
         
         
