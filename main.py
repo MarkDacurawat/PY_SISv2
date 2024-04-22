@@ -18,7 +18,7 @@ class App(customtkinter.CTk):
         self.title("Far Eastern Polytechnic College | Student Information System")
         self.geometry("1360x690+0+0")
         self.resizable(width=FALSE, height=FALSE)
-        self.current_page_index = 0
+        self.current_page_index = 3
         self.pages = [self.user_type_page, self.login_form_page , self.student_form_page, self.dashboard_page, self.signup_form_page]
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("green")
@@ -306,14 +306,16 @@ class App(customtkinter.CTk):
         createTotalFrame(self.totalsFrame, "Bus. Administration", "BSBA student", totalBSBA, "#FFD23F", 1, 1)
         createTotalFrame(self.totalsFrame, "Education", "BTVTed student", totalBTVTed, "#074173", 1, 2)
     
-        
+        self.logoutButton = customtkinter.CTkButton(self.dashboard_container, text="LOGOUT", fg_color="red", hover_color="darkred", height=50, command=self.logout)
+        self.logoutButton.place(x=1180, y=550)
        
 
     def logout(self):
-        # Add your logout logic here, for example, switch back to the login page
-        self.changePage("login_form_page")
-        self.userLoggedIn = False
-        self.userDetails = None
+        confirmation = messagebox.askokcancel("Logout", "Are you sure you want to logout?")
+        if confirmation:
+            self.changePage("login_form_page")
+            self.userLoggedIn = False
+            self.userDetails = None
         
         
 
