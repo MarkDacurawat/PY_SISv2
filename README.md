@@ -35,6 +35,8 @@ This project is a Student Information System (SIS) developed using Python and th
 4. Download And Install SQLite3
    [Download SQLite Precompiled Binary](https://www.sqlite.org/2024/sqlite-tools-win-x64-3450300.zip)
 
+5. Add the path to the SQLite3 binary to your PATH environment variable.
+
 ## Usage
 
 1. Run the main script to launch the application:
