@@ -36,6 +36,7 @@ class App(customtkinter.CTk):
         # Admin Login
         self.userLoggedIn = False
         self.userDetails = None
+        self.key_pressed = None
         
         self.main_frame = customtkinter.CTkFrame(self, fg_color='transparent')
         self.main_frame.pack(fill=BOTH, expand=YES)
@@ -43,6 +44,16 @@ class App(customtkinter.CTk):
         self.rowconfigure(0, weight=1)
         
         self.load_main_widgets()
+        
+        def on_closing(event=None):
+            confirmation = messagebox.askokcancel("Exit", "Are you sure you want to exit?")
+            if confirmation:
+                app.destroy()
+        self.bind("<Escape>", on_closing)
+        self.protocol("WM_DELETE_WINDOW", on_closing)
+        
+        
+        
         
     def load_main_widgets(self):
         self.create_pager_container()
@@ -59,6 +70,7 @@ class App(customtkinter.CTk):
     
     def changePage(self, page_name, student=None):
         self.clearFrames(self.page_container)
+        self.unbind("<Return>")
         
         match page_name:
             case "user_type_page":
@@ -130,7 +142,7 @@ class App(customtkinter.CTk):
     
     def login_form_page(self):
         
-        def authenticate():
+        def authenticate(event=None):
             username = self.usernameEntry.get()
             password = self.passwordEntry.get()
             result = sisDatabase.authenticateAdmin(username, password)
@@ -142,6 +154,8 @@ class App(customtkinter.CTk):
                 self.changePage("dashboard_page")
             else:
                 messagebox.showerror("Login Error", "Invalid username or password")
+                
+        self.bind("<Return>", authenticate)
         
         self.login_container = customtkinter.CTkFrame(self.page_container, width=700, height=400)
         self.login_container.pack(pady=120, anchor=CENTER)
@@ -169,6 +183,8 @@ class App(customtkinter.CTk):
         self.loginButton = customtkinter.CTkButton(self.inputsFrame, width=280, height=40, text="LOGIN", command=authenticate)
         self.loginButton.place(x=20, y=220)
         
+        
+        
     def signup_form_page(self):
         
         # Validate Registration Entry
@@ -194,7 +210,7 @@ class App(customtkinter.CTk):
                 return False
             return True
         
-        def register():
+        def register(event=None):
             username = self.usernameEntry.get()
             password = self.passwordEntry.get()
             
@@ -210,12 +226,14 @@ class App(customtkinter.CTk):
             messagebox.showinfo("Signup Successful!", "You have successfully signed up!")
             self.changePage("dashboard_page")
             
+        self.bind("<Return>", register)
+            
         self.signup_container = customtkinter.CTkFrame(self.page_container, width=700, height=400)
         self.signup_container.pack(pady=120, anchor=CENTER)
         
         self.backButton = customtkinter.CTkButton(self.signup_container, text="Back", width=100, height=50, command=lambda: self.changePage("dashboard_page"))
         self.backButton.place(x=0, y=0)
-        
+
         
         self.fepc_logo = customtkinter.CTkImage(Image.open(fepc_logo_path), size=(300, 300))
         self.signupLogo = customtkinter.CTkLabel(self.signup_container, image=self.fepc_logo, text="")
@@ -430,7 +448,7 @@ class App(customtkinter.CTk):
                 messagebox.showerror("Error Message", "Phone number must be 11 digits.")
                 return False
             return True
-        def save_student_info():
+        def save_student_info(event=None):
             if not validate():
                 return
             
@@ -452,7 +470,7 @@ class App(customtkinter.CTk):
             messagebox.showinfo("Success Message", "Student information saved.")
             self.changePage('user_type_page')
             
-        def update_student_info():
+        def update_student_info(event=None):
             if not validate():
                 return
             
@@ -478,9 +496,11 @@ class App(customtkinter.CTk):
         if(method == "SAVE"):
             self.saveButton = customtkinter.CTkButton(self.formsFrame, width=1200, height=40, text="SAVE", command=save_student_info)
             self.saveButton.place(y=320, x=55)
+            self.bind("<Return>", save_student_info)
         else:
             self.updateButton = customtkinter.CTkButton(self.formsFrame, width=1200, height=40,fg_color="blue", hover_color="darkblue", text="UPDATE" , command=update_student_info)
             self.updateButton.place(y=320, x=55)
+            self.bind("<Return>", update_student_info)
         
         
         
@@ -513,7 +533,6 @@ if __name__ == "__main__":
     
     # Create Tables
     sisDatabase.create_tables()
-    # sisDatabase.insert_admin("admin", "12345")
     
     # Drop Tables
     # sisDatabase.drop_tables()
