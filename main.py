@@ -533,6 +533,7 @@ if __name__ == "__main__":
     
     # Create Tables
     sisDatabase.create_tables()
+    # sisDatabase.insert_admin("admin","12345")
     
     # Drop Tables
     # sisDatabase.drop_tables()
