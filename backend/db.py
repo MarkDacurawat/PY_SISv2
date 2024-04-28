@@ -44,11 +44,23 @@ class SisDatabase:
                 )
             """)
             
+            # Check if admin table is empty
+            self.cursor.execute("SELECT COUNT(*) FROM admin")
+            admin_count = self.cursor.fetchone()[0]
+            
+            # If admin table is empty, insert default admin
+            if admin_count == 0:
+                default_username = "admin"
+                default_password = "admin123"  # You should change this to a secure password
+                self.insert_admin(default_username, default_password)
+                print("Default admin account created successfully")
+            
             self.conn.commit()
             print("Tables created successfully")
         except Exception as e:
             print("Internal Server Error ", e)
-            
+
+          
     def authenticateAdmin(self, username, password):
         try:
             # Compute the MD5 hash of the password
@@ -150,7 +162,7 @@ class SisDatabase:
             
     def countStudents(self):
         try:
-            self.cursor.execute("SELECT COUNT(*) FROM students")
+            self.cursor.execute("SELECT COUNT(*) FROM students WHERE year_level != 'Graduated'")
             result = self.cursor.fetchone()
             return result[0]
         except Exception as e:
@@ -158,7 +170,7 @@ class SisDatabase:
     
     def countBSCS(self):
         try:
-            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'B.S Computer Science'")
+            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'B.S Computer Science' AND year_level != 'Graduated'")
             result = self.cursor.fetchone()
             return result[0]
         except Exception as e:
@@ -166,7 +178,7 @@ class SisDatabase:
             
     def countBSTM(self):
         try:
-            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'B.S Tourism Mngt'")
+            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'B.S Tourism Mngt' AND year_level != 'Graduated'")
             result = self.cursor.fetchone()
             return result[0]
         except Exception as e:
@@ -174,7 +186,7 @@ class SisDatabase:
             
     def countBSHM(self):
         try:
-            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'B.S Hospitality Mngt'")
+            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'B.S Hospitality Mngt' AND year_level != 'Graduated'")
             result = self.cursor.fetchone()
             return result[0]
         except Exception as e:
@@ -182,7 +194,7 @@ class SisDatabase:
             
     def countBSBA(self):
         try:
-            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'B.S Bus. Administration'")
+            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'B.S Bus. Administration' AND year_level != 'Graduated'")
             result = self.cursor.fetchone()
             return result[0]
         except Exception as e:
@@ -190,7 +202,15 @@ class SisDatabase:
             
     def countBTVTed(self):
         try:
-            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'BTVTed Education'")
+            self.cursor.execute("SELECT COUNT(*) FROM students WHERE course = 'BTVTed Education' AND year_level != 'Graduated'")
+            result = self.cursor.fetchone()
+            return result[0]
+        except Exception as e:
+            print("Internal Server Error ", e)
+        
+    def countGraduatedStudents(self):
+        try:
+            self.cursor.execute("SELECT COUNT(*) FROM students WHERE year_level = 'Graduated'")
             result = self.cursor.fetchone()
             return result[0]
         except Exception as e:
