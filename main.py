@@ -18,7 +18,7 @@ class App(customtkinter.CTk):
         self.title("Far Eastern Polytechnic College | Student Information System")
         self.geometry("1360x690+0+0")
         self.resizable(width=FALSE, height=FALSE)
-        self.current_page_index = 0
+        self.current_page_index = 3
         self.pages = [self.user_type_page, self.login_form_page , self.student_form_page, self.dashboard_page, self.signup_form_page]
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("green")
@@ -286,6 +286,7 @@ class App(customtkinter.CTk):
         totalBSHM = sisDatabase.countBSHM()
         totalBSBA = sisDatabase.countBSBA()
         totalBTVTed = sisDatabase.countBTVTed()
+        totalGraduated = sisDatabase.countGraduatedStudents()
         
         self.dashboard_container = customtkinter.CTkFrame(self.page_container, fg_color='transparent')
         self.dashboard_container.pack(fill=BOTH, expand=YES)
@@ -323,6 +324,7 @@ class App(customtkinter.CTk):
         createTotalFrame(self.totalsFrame, "Admins", "admins", totalAdmins, "#486581", 1, 0)
         createTotalFrame(self.totalsFrame, "Bus. Administration", "BSBA student", totalBSBA, "#FFD23F", 1, 1)
         createTotalFrame(self.totalsFrame, "Education", "BTVTed student", totalBTVTed, "#074173", 1, 2)
+        createTotalFrame(self.totalsFrame, "Graduated", "Graduated student", totalGraduated, "#481E14", 1, 3)
     
         self.logoutButton = customtkinter.CTkButton(self.dashboard_container, text="LOGOUT", fg_color="red", hover_color="darkred", height=50, command=self.logout)
         self.logoutButton.place(x=1180, y=550)
@@ -410,6 +412,9 @@ class App(customtkinter.CTk):
         self.yearlevel_option  =  self.create_form_option_menu(self.formsFrame, "YEAR LEVEL:", ['1st Year', '2nd Year', '3rd Year', '4th Year'],self.row["second"], self.column["third"])
         self.course_option  =  self.create_form_option_menu(self.formsFrame, "COURSE:", ['B.S Computer Science', 'B.S Tourism Mngt', 'B.S Hospitality Mngt', 'B.S Bus. Administration', 'BTVTed Education'],self.row["third"], self.column["third"])
         self.semester_option  =  self.create_form_option_menu(self.formsFrame, "SEMESTER:", ["1st Semester", "2nd Semester"],self.row["fourth"], self.column["third"])
+        
+        if self.userLoggedIn and method == "UPDATE":
+            self.yearlevel_option.configure(values=['1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduated'])
 
         def validate(): 
             lrn = self.lrn_entry.get()
@@ -468,7 +473,11 @@ class App(customtkinter.CTk):
             sisDatabase.insert_new_student(lrn, firstname, middlename, lastname, age, birthday, address, phonenumber, gender, yearlevel, course, semester)
             
             messagebox.showinfo("Success Message", "Student information saved.")
-            self.changePage('user_type_page')
+            
+            if not self.userLoggedIn:
+                self.changePage('user_type_page')
+            else:
+                self.changePage('dashboard_page')
             
         def update_student_info(event=None):
             if not validate():
