@@ -18,7 +18,7 @@ class App(customtkinter.CTk):
         self.title("Far Eastern Polytechnic College | Student Information System")
         self.geometry("1360x690+0+0")
         self.resizable(width=FALSE, height=FALSE)
-        self.current_page_index = 3
+        self.current_page_index = 0
         self.pages = [self.user_type_page, self.login_form_page , self.student_form_page, self.dashboard_page, self.signup_form_page]
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("green")
